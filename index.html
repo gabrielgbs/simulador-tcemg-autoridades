@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCE-MG — Simulador de Remuneração de Autoridades</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #0f172a;
+            --accent: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #15803d;
+            --warning: #b45309;
+            --danger: #b91c1c;
+            --cenario-a: #eff6ff;
+            --cenario-a-border: #bfdbfe;
+            --cenario-b: #f0fdf4;
+            --cenario-b-border: #bbf7d0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        .header {
+            max-width: 1280px;
+            margin: 0 auto 24px auto;
+            text-align: center;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            color: white;
+            padding: 28px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #93c5fd;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .card-a {
+            background-color: var(--cenario-a);
+            border-color: var(--cenario-a-border);
+        }
+
+        .card-b {
+            background-color: var(--cenario-b);
+            border-color: var(--cenario-b-border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0,0,0,0.08);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-a { background: #dbeafe; color: #1e40af; }
+        .badge-b { background: #dcfce7; color: #166534; }
+
+        .section-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 16px 0 8px 0;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .form-group select, 
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group select:focus, 
+        .form-group input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .summary-box {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-top: 12px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .metric-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-card.highlight-a {
+            border-top: 4px solid #2563eb;
+        }
+
+        .metric-card.highlight-b {
+            border-top: 4px solid #16a34a;
+        }
+
+        .metric-card.highlight-diff {
+            border-top: 4px solid #d97706;
+            background: #fffbeb;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .val-a { color: #1e40af; }
+        .val-b { color: #166534; }
+        .val-pos { color: var(--success); }
+        .val-neg { color: var(--danger); }
+
+        table.breakdown {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin-top: 12px;
+        }
+
+        table.breakdown th, 
+        table.breakdown td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        table.breakdown th {
+            background: #f1f5f9;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        table.breakdown td.num {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.92rem;
+        }
+
+        .row-total {
+            font-weight: 700;
+            background: #f8fafc;
+        }
+
+        .row-net {
+            font-weight: 800;
+            font-size: 1rem;
+            background: #f0fdf4;
+        }
+
+        .note {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 16px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>TCE-MG — Simulador Remuneratório de Autoridades</h1>
+        <p>Comparador parametrizável para Conselheiros, Conselheiros Substitutos e Procuradores do MPTC (Regras da Resolução Conjunta CNJ/CNMP nº 14/2026, LC nº 169/2022 e Tabela 2026)</p>
+    </div>
+
+    <div class="container">
+        <!-- CENÁRIO 1 -->
+        <div class="card card-a">
+            <div class="card-title">
+                <span>Cenário A (Base / Atual)</span>
+                <span class="badge badge-a">Cenário 1</span>
+            </div>
+
+            <div class="section-header">1. Cargo e Subsídio</div>
+            <div class="form-group">
+                <label for="cargo1">Cargo de Autoridade:</label>
+                <select id="cargo1" onchange="calcular()">
+                    <option value="conselheiro">Conselheiro / Procurador MPTC (R$ 41.845,48)</option>
+                    <option value="substituto">Conselheiro Substituto (R$ 39.753,20)</option>
+                </select>
+            </div>
+
+            <div class="section-header">2. Função de Direção e Gestão (LC 169/2022)</div>
+            <div class="form-group">
+                <label for="direcao1">Cargo de Direção / Órgão:</label>
+                <select id="direcao1" onchange="calcular()">
+                    <option value="0">Nenhum (0%)</option>
+                    <option value="20">Presidência / Procuradoria-Geral (20%)</option>
+                    <option value="10">Vice-Pres. / Corregedoria / Ouvidoria / Escola (10%)</option>
+                    <option value="20_dup">Acúmulo de 2 Órgãos de Direção (20%)</option>
+                </select>
+            </div>
+
+            <div class="section-header">3. Resolução Conjunta CNJ/CNMP nº 14/2026</div>
+            <div class="form-group">
+                <label for="anosAntiguidade1">Tempo na Carreira Jurídica (Anos para PVTAC):</label>
+                <input type="number" id="anosAntiguidade1" value="15" min="0" max="35" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="acervo1">% Acúmulo de Acervo / Função Cumulativa:</label>
+                <select id="acervo1" onchange="calcular()">
+                    <option value="0">0% (Sem acúmulo)</option>
+                    <option value="10">10% do subsídio</option>
+                    <option value="20">20% do subsídio</option>
+                    <option value="35">35% do subsídio (Teto máximo)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="infancia1">Filhos de até 6 anos (Proteção 1ª Infância - 3% cada):</label>
+                <input type="number" id="infancia1" value="0" min="0" max="5" oninput="calcular()">
+            </div>
+
+            <div class="section-header">4. Auxílios Indenizatórios Gerais</div>
+            <div class="form-group">
+                <label for="auxAlim1">Auxílio-Alimentação (R$):</label>
+                <input type="number" id="auxAlim1" value="2968" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="auxSaude1">Assistência à Saúde Comprovada (R$):</label>
+                <input type="number" id="auxSaude1" value="1100" oninput="calcular()">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="travaCNJ1" checked onchange="calcular()">
+                <label for="travaCNJ1">Aplicar Trava de 35% para Indenizações (Res. 14/2026)</label>
+            </div>
+        </div>
+
+        <!-- CENÁRIO 2 -->
+        <div class="card card-b">
+            <div class="card-title">
+                <span>Cenário B (Proposta / Simulação)</span>
+                <span class="badge badge-b">Cenário 2</span>
+            </div>
+
+            <div class="section-header">1. Cargo e Subsídio</div>
+            <div class="form-group">
+                <label for="cargo2">Cargo de Autoridade:</label>
+                <select id="cargo2" onchange="calcular()">
+                    <option value="conselheiro">Conselheiro / Procurador MPTC (R$ 41.845,48)</option>
+                    <option value="substituto">Conselheiro Substituto (R$ 39.753,20)</option>
+                </select>
+            </div>
+
+            <div class="section-header">2. Função de Direção e Gestão (LC 169/2022)</div>
+            <div class="form-group">
+                <label for="direcao2">Cargo de Direção / Órgão:</label>
+                <select id="direcao2" onchange="calcular()">
+                    <option value="0">Nenhum (0%)</option>
+                    <option value="20" selected>Presidência / Procuradoria-Geral (20%)</option>
+                    <option value="10">Vice-Pres. / Corregedoria / Ouvidoria / Escola (10%)</option>
+                    <option value="20_dup">Acúmulo de 2 Órgãos de Direção (20%)</option>
+                </select>
+            </div>
+
+            <div class="section-header">3. Resolução Conjunta CNJ/CNMP nº 14/2026</div>
+            <div class="form-group">
+                <label for="anosAntiguidade2">Tempo na Carreira Jurídica (Anos para PVTAC):</label>
+                <input type="number" id="anosAntiguidade2" value="20" min="0" max="35" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="acervo2">% Acúmulo de Acervo / Função Cumulativa:</label>
+                <select id="acervo2" onchange="calcular()">
+                    <option value="0">0% (Sem acúmulo)</option>
+                    <option value="10">10% do subsídio</option>
+                    <option value="20">20% do subsídio</option>
+                    <option value="35" selected>35% do subsídio (Teto máximo)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="infancia2">Filhos de até 6 anos (Proteção 1ª Infância - 3% cada):</label>
+                <input type="number" id="infancia2" value="1" min="0" max="5" oninput="calcular()">
+            </div>
+
+            <div class="section-header">4. Auxílios Indenizatórios Gerais</div>
+            <div class="form-group">
+                <label for="auxAlim2">Auxílio-Alimentação (R$):</label>
+                <input type="number" id="auxAlim2" value="2968" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="auxSaude2">Assistência à Saúde Comprovada (R$):</label>
+                <input type="number" id="auxSaude2" value="1100" oninput="calcular()">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="travaCNJ2" checked onchange="calcular()">
+                <label for="travaCNJ2">Aplicar Trava de 35% para Indenizações (Res. 14/2026)</label>
+            </div>
+        </div>
+
+        <!-- QUADRO COMPARATIVO CONSOLIDADO -->
+        <div class="summary-box">
+            <h2 style="font-size: 1.3rem; color: var(--primary);">Quadro Comparativo Consolidado</h2>
+            
+            <div class="summary-grid">
+                <div class="metric-card highlight-a">
+                    <div class="metric-label">Líquido A (Cenário 1)</div>
+                    <div class="metric-value val-a" id="metricaLiquidoA">R$ 0,00</div>
+                </div>
+                <div class="metric-card highlight-b">
+                    <div class="metric-label">Líquido B (Cenário 2)</div>
+                    <div class="metric-value val-b" id="metricaLiquidoB">R$ 0,00</div>
+                </div>
+                <div class="metric-card highlight-diff">
+                    <div class="metric-label">Diferença Líquida (B - A)</div>
+                    <div class="metric-value" id="metricaDiff">R$ 0,00</div>
+                </div>
+            </div>
+
+            <table class="breakdown">
+                <thead>
+                    <tr>
+                        <th>Rubrica / Componente</th>
+                        <th style="text-align: right;">Cenário A (R$)</th>
+                        <th style="text-align: right;">Cenário B (R$)</th>
+                        <th style="text-align: right;">Variação (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>(+) Subsídio Base Mensal</td>
+                        <td class="num" id="subA">0,00</td>
+                        <td class="num" id="subB">0,00</td>
+                        <td class="num" id="subDiff">0,00</td>
+                    </tr>
+                    <tr>
+                        <td>(+) Parcela de Direção / Gestão (LC 169/22)</td>
+                        <td class="num" id="dirA">0,00</td>
+                        <td class="num" id="dirB">0,00</td>
+                        <td class="num" id="dirDiff">0,00</td>
+                    </tr>
+                    <tr>
+                        <td>(+) PVTAC — Antiguidade Carreira (Res. 14/26)</td>
+                        <td class="num" id="pvtacA">0,00</td>
+                        <td class="num" id="pvtacB">0,00</td>
+                        <td class="num" id="pvtacDiff">0,00</td>
+                    </tr>
+                    <tr>
+                        <td>(+) Acúmulo de Acervo / Jurisdição (Res. 14/26)</td>
+                        <td class="num" id="acervoA">0,00</td>
+                        <td class="num" id="acervoB">0,00</td>
+                        <td class="num" id="acervoDiff">0,00</td>
+                    </tr>
+                    <tr>
+                        <td>(+) Proteção à 1ª Infância (3% p/ filho)</td>
+                        <td class="num" id="infA">0,00</td>
+                        <td class="num" id="infB">0,00</td>
+                        <td class="num" id="infDiff">0,00</td>
+                    </tr>
+                    <tr>
+                        <td>(+) Auxílios Gerais (Alimentação + Saúde)</td>
+                        <td class="num" id="auxA">0,00</td>
+                        <td class="num" id="auxB">0,00</td>
+                        <td class="num" id="auxDiff">0,00</td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>(=) TOTAL BRUTO NOMINAL</td>
+                        <td class="num" id="brutoNomA">0,00</td>
+                        <td class="num" id="brutoNomB">0,00</td>
+                        <td class="num" id="brutoNomDiff">0,00</td>
+                    </tr>
+                    <tr style="color: var(--danger);">
+                        <td>(-) Glosa / Corte de Indenizações (Teto 35%)</td>
+                        <td class="num" id="glosaA">0,00</td>
+                        <td class="num" id="glosaB">0,00</td>
+                        <td class="num" id="glosaDiff">0,00</td>
+                    </tr>
+                    <tr style="color: var(--danger);">
+                        <td>(-) Retenção Teto Constitucional STF (R$ 46.366,19)</td>
+                        <td class="num" id="tetoA">0,00</td>
+                        <td class="num" id="tetoB">0,00</td>
+                        <td class="num" id="tetoDiff">0,00</td>
+                    </tr>
+                    <tr class="row-total">
+                        <td>(=) REMUNERAÇÃO BRUTA EFETIVA</td>
+                        <td class="num" id="brutoEfetA">0,00</td>
+                        <td class="num" id="brutoEfetB">0,00</td>
+                        <td class="num" id="brutoEfetDiff">0,00</td>
+                    </tr>
+                    <tr style="color: var(--danger);">
+                        <td>(-) Previdência Oficial (RPPS MG ~15,2%)</td>
+                        <td class="num" id="rppsA">0,00</td>
+                        <td class="num" id="rppsB">0,00</td>
+                        <td class="num" id="rppsDiff">0,00</td>
+                    </tr>
+                    <tr style="color: var(--danger);">
+                        <td>(-) Imposto de Renda Retido na Fonte (IRPF 27,5%)</td>
+                        <td class="num" id="irpfA">0,00</td>
+                        <td class="num" id="irpfB">0,00</td>
+                        <td class="num" id="irpfDiff">0,00</td>
+                    </tr>
+                    <tr class="row-net">
+                        <td>(=) VALOR LÍQUIDO A RECEBER EM CONTA</td>
+                        <td class="num" id="netA">0,00</td>
+                        <td class="num" id="netB">0,00</td>
+                        <td class="num" id="netDiff">0,00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="note">
+                <strong>Base Legal & Notas de Cálculo:</strong><br>
+                1. <strong>Subsídios:</strong> Conforme Lei Estadual nº 25.808/2026 (Conselheiro e Procurador MPTC: R$ 41.845,48; Conselheiro Substituto: R$ 39.753,20).<br>
+                2. <strong>Teto Constitucional:</strong> Valor fixado para os Ministros do STF em R$ 46.366,19.<br>
+                3. <strong>Resolução Conjunta CNJ/CNMP nº 14/2026:</strong> O PVTAC concede 5% a cada 5 anos de carreira (máx. 35%). O somatório das parcelas indenizatórias de direção e acúmulo de acervo é limitado ao teto global de 35% do subsídio.<br>
+                4. <strong>Descontos:</strong> RPPS incide sobre o Subsídio. As verbas indenizatórias são isentas de Previdência e IRPF.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TETO_STF = 46366.19;
+
+        function fmt(val) {
+            return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function calcCenario(prefix) {
+            const cargo = document.getElementById('cargo' + prefix).value;
+            const subsidio = (cargo === 'conselheiro') ? 41845.48 : 39753.20;
+
+            // 2. Direção
+            const percDirecaoVal = document.getElementById('direcao' + prefix).value;
+            const percDirecao = (percDirecaoVal === '20_dup') ? 0.20 : (parseFloat(percDirecaoVal) / 100);
+            const valDirecao = subsidio * percDirecao;
+
+            // 3. Resolução 14/2026
+            const anos = parseInt(document.getElementById('anosAntiguidade' + prefix).value) || 0;
+            const percPVTAC = Math.min(0.35, Math.floor(anos / 5) * 0.05);
+            const valPVTAC = subsidio * percPVTAC;
+
+            const percAcervo = parseFloat(document.getElementById('acervo' + prefix).value) / 100;
+            const valAcervo = subsidio * percAcervo;
+
+            const numInfancia = parseInt(document.getElementById('infancia' + prefix).value) || 0;
+            const valInfancia = subsidio * 0.03 * numInfancia;
+
+            // 4. Auxílios
+            const auxAlim = parseFloat(document.getElementById('auxAlim' + prefix).value) || 0;
+            const auxSaude = parseFloat(document.getElementById('auxSaude' + prefix).value) || 0;
+            const totalAux = auxAlim + auxSaude;
+
+            // Consolidação Bruta Nominal
+            const brutoNominal = subsidio + valDirecao + valPVTAC + valAcervo + valInfancia + totalAux;
+
+            // Aplicação da Trava de 35% para Indenizações (Direção + Acervo)
+            const aplicaTrava = document.getElementById('travaCNJ' + prefix).checked;
+            const somaIndenizSujeitas = valDirecao + valAcervo;
+            const limite35 = subsidio * 0.35;
+            let glosaIndeniz = 0;
+
+            if (aplicaTrava && somaIndenizSujeitas > limite35) {
+                glosaIndeniz = somaIndenizSujeitas - limite35;
+            }
+
+            // Abate-Teto Constitucional
+            let abateTeto = 0;
+            if (subsidio > TETO_STF) {
+                abateTeto = subsidio - TETO_STF;
+            }
+
+            const brutoEfetivo = brutoNominal - glosaIndeniz - abateTeto;
+
+            // Descontos
+            const valRPPS = subsidio * 0.152; // Alíquota média/progressiva RPPS MG sobre subsídio
+            const baseIRPF = Math.max(0, subsidio - valRPPS);
+            const valIRPF = Math.max(0, (baseIRPF * 0.275) - 908.73);
+
+            const totalDescontos = valRPPS + valIRPF;
+            const liquido = brutoEfetivo - totalDescontos;
+
+            return {
+                subsidio, valDirecao, valPVTAC, valAcervo, valInfancia, totalAux,
+                brutoNominal, glosaIndeniz, abateTeto, brutoEfetivo,
+                valRPPS, valIRPF, totalDescontos, liquido
+            };
+        }
+
+        function calcular() {
+            const a = calcCenario('1');
+            const b = calcCenario('2');
+
+            // Preencher Tabela
+            document.getElementById('subA').innerText = fmt(a.subsidio);
+            document.getElementById('subB').innerText = fmt(b.subsidio);
+            document.getElementById('subDiff').innerText = fmt(b.subsidio - a.subsidio);
+
+            document.getElementById('dirA').innerText = fmt(a.valDirecao);
+            document.getElementById('dirB').innerText = fmt(b.valDirecao);
+            document.getElementById('dirDiff').innerText = fmt(b.valDirecao - a.valDirecao);
+
+            document.getElementById('pvtacA').innerText = fmt(a.valPVTAC);
+            document.getElementById('pvtacB').innerText = fmt(b.valPVTAC);
+            document.getElementById('pvtacDiff').innerText = fmt(b.valPVTAC - a.valPVTAC);
+
+            document.getElementById('acervoA').innerText = fmt(a.valAcervo);
+            document.getElementById('acervoB').innerText = fmt(b.valAcervo);
+            document.getElementById('acervoDiff').innerText = fmt(b.valAcervo - a.valAcervo);
+
+            document.getElementById('infA').innerText = fmt(a.valInfancia);
+            document.getElementById('infB').innerText = fmt(b.valInfancia);
+            document.getElementById('infDiff').innerText = fmt(b.valInfancia - a.valInfancia);
+
+            document.getElementById('auxA').innerText = fmt(a.totalAux);
+            document.getElementById('auxB').innerText = fmt(b.totalAux);
+            document.getElementById('auxDiff').innerText = fmt(b.totalAux - a.totalAux);
+
+            document.getElementById('brutoNomA').innerText = fmt(a.brutoNominal);
+            document.getElementById('brutoNomB').innerText = fmt(b.brutoNominal);
+            document.getElementById('brutoNomDiff').innerText = fmt(b.brutoNominal - a.brutoNominal);
+
+            document.getElementById('glosaA').innerText = fmt(-a.glosaIndeniz);
+            document.getElementById('glosaB').innerText = fmt(-b.glosaIndeniz);
+            document.getElementById('glosaDiff').innerText = fmt(-(b.glosaIndeniz - a.glosaIndeniz));
+
+            document.getElementById('tetoA').innerText = fmt(-a.abateTeto);
+            document.getElementById('tetoB').innerText = fmt(-b.abateTeto);
+            document.getElementById('tetoDiff').innerText = fmt(-(b.abateTeto - a.abateTeto));
+
+            document.getElementById('brutoEfetA').innerText = fmt(a.brutoEfetivo);
+            document.getElementById('brutoEfetB').innerText = fmt(b.brutoEfetivo);
+            document.getElementById('brutoEfetDiff').innerText = fmt(b.brutoEfetivo - a.brutoEfetivo);
+
+            document.getElementById('rppsA').innerText = fmt(-a.valRPPS);
+            document.getElementById('rppsB').innerText = fmt(-b.valRPPS);
+            document.getElementById('rppsDiff').innerText = fmt(-(b.valRPPS - a.valRPPS));
+
+            document.getElementById('irpfA').innerText = fmt(-a.valIRPF);
+            document.getElementById('irpfB').innerText = fmt(-b.valIRPF);
+            document.getElementById('irpfDiff').innerText = fmt(-(b.valIRPF - a.valIRPF));
+
+            document.getElementById('netA').innerText = fmt(a.liquido);
+            document.getElementById('netB').innerText = fmt(b.liquido);
+            
+            const diffNet = b.liquido - a.liquido;
+            document.getElementById('netDiff').innerText = fmt(diffNet);
+
+            // Métrica Destaque
+            document.getElementById('metricaLiquidoA').innerText = 'R$ ' + fmt(a.liquido);
+            document.getElementById('metricaLiquidoB').innerText = 'R$ ' + fmt(b.liquido);
+            
+            const elemDiff = document.getElementById('metricaDiff');
+            elemDiff.innerText = (diffNet >= 0 ? '+ R$ ' : '- R$ ') + fmt(Math.abs(diffNet));
+            elemDiff.className = 'metric-value ' + (diffNet >= 0 ? 'val-pos' : 'val-neg');
+        }
+
+        // Executa o cálculo inicial ao carregar a página
+        window.onload = calcular;
+    </script>
+</body>
+</html>
